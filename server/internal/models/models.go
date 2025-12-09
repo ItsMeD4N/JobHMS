@@ -5,21 +5,25 @@ import (
 )
 
 type User struct {
-	ID       uint   `gorm:"primaryKey"`
-	NIM      string `gorm:"uniqueIndex"`
-	Email    string `gorm:"uniqueIndex"`
-	Role              string `gorm:"default:'voter'"` // 'admin' or 'voter'
-	HasVoted          bool   `gorm:"default:false"`
-	ProfileImage      string
-	KTMImage          string
+	ID                 uint   `gorm:"primaryKey"`
+	Name               string // Added Name
+	NIM                string `gorm:"uniqueIndex"`
+	Email              string `gorm:"uniqueIndex"`
+	Role               string `gorm:"default:'voter'"` // 'admin' or 'voter'
+	HasVoted           bool   `gorm:"default:false"`
+	ProfileImage       string
+	KTMImage           string
 	VerificationStatus string `gorm:"default:'none'"` // 'none', 'pending', 'approved', 'rejected'
+	Token              string // Added Token
 }
 
 type Candidate struct {
-	ID          uint `gorm:"primaryKey"`
-	Name        string
-	Description string
-	ImageURL    string
+	ID   uint `gorm:"primaryKey"`
+	Name string
+	// Description removed
+	Visi     string // Added Visi
+	Misi     string // Added Misi
+	ImageURL string
 }
 
 type Vote struct {
@@ -27,4 +31,7 @@ type Vote struct {
 	UserID      uint
 	CandidateID uint
 	Timestamp   time.Time
+	KTMImage    string // Added
+	SelfImage   string // Added
+	IsApproved  bool   `gorm:"default:false"` // Added
 }

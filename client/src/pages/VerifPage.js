@@ -52,35 +52,36 @@ const VerifPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 p-8">
+        <div className="min-h-screen bg-gray-200 p-8">
             <div className="max-w-3xl mx-auto">
                 <Steps currentStep={1} />
 
-                <div className="bg-white p-8 rounded-lg shadow-md">
-                    <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Verification Step</h2>
-                    <p className="text-center text-gray-600 mb-8">Please upload your photo and KTM to proceed.</p>
+                <div className="bg-white bg-opacity-75 p-8 rounded-lg shadow-md">
+                    <h3 className="text-xl font-bold text-center text-gray-800">Pemilu HMS ITB 2025</h3>
+                    <h1 className="text-4xl font-bold text-center text-gray-800">Verifikasi Data</h1>
+                    <p className="text-center text-sm text-gray-600 mb-8">Upload foto diri dengan KTM untuk lanjut dengan pemilihan</p>
 
                     {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-6">{error}</div>}
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Profile Image Input */}
-                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition h-48"
+                            <div className="border-2 border-dashed border-green-900 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition h-48 gap-4"
                                 onClick={() => document.getElementById('profileInput').click()}>
                                 <input id="profileInput" type="file" accept="image/*" className="hidden"
                                     onChange={(e) => handleFileChange(e, setProfileImg)} />
-                                <div className="text-4xl mb-2">📸</div>
+                                <img src="/self.png" alt="foto diri" className="h-24 opacity-50"></img>
                                 <div className="text-gray-500 font-medium text-center">
-                                    {profileImg ? profileImg.name : "Klik untuk mengunggah foto profil"}
+                                    {profileImg ? profileImg.name : "Klik untuk mengunggah foto diri"}
                                 </div>
                             </div>
 
                             {/* KTM Image Input */}
-                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition h-48"
+                            <div className="border-2 border-dashed border-green-900 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition h-48 gap-4"
                                 onClick={() => document.getElementById('ktmInput').click()}>
                                 <input id="ktmInput" type="file" accept="image/*" className="hidden"
                                     onChange={(e) => handleFileChange(e, setKtmImg)} />
-                                <div className="text-4xl mb-2">🆔</div>
+                                <img src="/id.png" alt="ktm" className="h-24 opacity-75"></img>
                                 <div className="text-gray-500 font-medium text-center">
                                     {ktmImg ? ktmImg.name : "Klik untuk menggunggah foto ktm"}
                                 </div>
@@ -89,8 +90,8 @@ const VerifPage = () => {
 
                         <div className="flex justify-center mt-8">
                             <button type="submit" disabled={loading}
-                                className="w-full md:w-1/2 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 transition duration-200 shadow-md">
-                                {loading ? 'Uploading...' : 'Submit Verification'}
+                                className="w-full md:w-1/2 bg-green-900 text-white py-3 rounded-lg font-semibold hover:bg-green-950 disabled:opacity-50 transition duration-200 shadow-md">
+                                {loading ? 'Uploading...' : 'Submit Verifikasi'}
                             </button>
                         </div>
                     </form>

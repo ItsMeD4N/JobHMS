@@ -5,48 +5,65 @@ import Steps from '../components/Steps';
 
 const VotingPage = () => {
     const [candidates, setCandidates] = useState([]);
-    const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
-    const [message, setMessage] = useState('');
-    const [error, setError] = useState('');
+    const [user, setUser] = useState(null);
+    const [selectedCandidate, setSelectedCandidate] = useState(null); // For Modal
+    const [ktmImg, setKtmImg] = useState(null);
+    const [selfImg, setSelfImg] = useState(null);
+    const [voting, setVoting] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (!user) {
+        const storedUser = JSON.parse(localStorage.getItem('user'));
+        if (!storedUser) {
             navigate('/login');
-            return;
+        } else {
+            setUser(storedUser);
+            fetchCandidates();
         }
-        fetchCandidates();
-    }, [user, navigate]);
+    }, [navigate]);
 
     const fetchCandidates = async () => {
         try {
             const response = await api.get('/candidates');
             setCandidates(response.data);
-        } catch (err) {
-            console.error(err);
+        } catch (error) {
+            console.error('Error fetching candidates:', error);
         }
     };
 
-    const handleVote = async (candidateId) => {
+    const handleVoteClick = (candidateId) => {
+        setSelectedCandidate(candidateId);
+    };
+
+    const handleConfirmVote = async (e) => {
+        e.preventDefault();
+        if (!ktmImg || !selfImg) {
+            alert("Harap upload kedua foto (KTM dan Diri Sendiri) untuk verifikasi ulang.");
+            return;
+        }
+
+        setVoting(true);
+        const data = new FormData();
+        data.append('userId', user.ID);
+        data.append('candidateId', selectedCandidate);
+        data.append('ktm_image', ktmImg);
+        data.append('self_image', selfImg);
+
         try {
-            await api.post('/vote', { userId: user.ID, candidateId }); // Note: Golang struct field is ID (uppercase) but JSON defaults to fields. Wait, I used BindJSON which uses struct tags. My struct helper models.User had ID, candidates had ID. 
-            // Checking my handlers.go, I used `json:"userId"` in the struct definition inside Vote handler.
-            // And in models.go, User has `ID uint`. When JSON marshalled, it is usually `ID` unless tagged. 
-            // Let me just check my handlers.go content again mentally or via artifact.
-            // In handlers.go: Vote struct has `json:"userId"`. User struct in models.go has `ID`.
-            // The return value of Login is `c.JSON(http.StatusOK, user)`.
-            // So the localStorage user will have keys matching the struct fields in models.go.
-            // If models.go didn't have json tags, it defaults to field name (e.g. "ID").
-            // So user.ID is correct. 
-            setMessage('Vote cast successfully!');
-            setError('');
-            // Update local user state to reflect hasVoted to prevent immediate re-vote in UI
+            await api.post('/vote', data, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            // Update local user state
             const updatedUser = { ...user, HasVoted: true };
-            setUser(updatedUser);
             localStorage.setItem('user', JSON.stringify(updatedUser));
-        } catch (err) {
-            setError(err.response?.data?.error || 'Failed to vote');
-            setMessage('');
+            setUser(updatedUser);
+            setSelectedCandidate(null); // Close modal
+            alert('Suara berhasil dikirim! Menunggu verifikasi admin.');
+        } catch (error) {
+            console.error('Error voting:', error);
+            alert(error.response?.data?.error || 'Gagal mengirim suara.');
+        } finally {
+            setVoting(false);
         }
     };
 
@@ -56,40 +73,87 @@ const VotingPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 p-8">
-            <div className="max-w-4xl mx-auto">
+        <div className="min-h-screen bg-gray-200 bg-radial p-8">
+            <div className="max-w-3xl mx-auto">
                 <Steps currentStep={2} />
-                <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-800">Vote for Your Candidate</h1>
-                    <button onClick={handleLogout} className="text-sm text-red-600 hover:text-red-800">Logout</button>
-                </div>
+                <h3 className="text-xl font-bold text-center text-gray-800">Pemilu HMS ITB 2025</h3>
+                <h1 className="text-3xl font-bold text-center text-gray-800">Pemilihan Ketua BP HMS 2025/2026</h1>
+                <p className="text-center text-sm text-gray-600 mb-8">Pilih kandidat yang menurut anda cocok untuk menjadi Ketua Umum BP Himpunan</p>
 
-                {message && <div className="bg-green-100 text-green-700 p-4 rounded mb-4">{message}</div>}
-                {error && <div className="bg-red-100 text-red-700 p-4 rounded mb-4">{error}</div>}
-                {user?.HasVoted && <div className="bg-blue-100 text-blue-700 p-4 rounded mb-4">You have already voted. Thank you!</div>}
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {candidates.map((candidate) => (
-                        <div key={candidate.ID} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                            <img src={candidate.ImageURL} alt={candidate.Name} className="w-full h-48 object-cover" />
-                            <div className="p-6">
-                                <h3 className="text-xl font-bold mb-2">{candidate.Name}</h3>
-                                <p className="text-gray-600 mb-4">{candidate.Description}</p>
+                {user?.HasVoted ? (
+                    <div className="bg-green-100 text-green-700 p-8 rounded-lg text-center text-xl font-bold shadow">
+                        Terima kasih! Suara Anda telah direkam dan sedang menunggu verifikasi akhir oleh panitia.
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {candidates.map((candidate) => (
+                            <div key={candidate.ID} className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col hover:shadow-lg transition-shadow">
+                                <div className="p-6 flex-1 flex flex-col items-center justify-center">
+                                    <div className="w-32 h-32 bg-gray-200 overflow-hidden rounded-full">
+                                        <img
+                                            src={`http://localhost:8080${candidate.ImageURL}`}
+                                            alt={candidate.Name}
+                                            className="w-32 h-32 rounded-full object-cover"
+                                            onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=No+Image'; }} // Fallback
+                                        />
+                                    </div>
+                                    <div className="p-6 flex-1 flex flex-col items-center justify-center">
+                                        <h3 className="text-2xl font-bold mb-2 text-gray-800">{candidate.Name}</h3>
+                                        <div className="mb-6 space-y-2 flex-1 items-center justify-center">
+                                            <div className="rounded text-sm">
+                                                <strong className="block text-blue-700 mb-1 text-center">Visi:</strong>
+                                                <p className="text-center">{candidate.Visi || '-'}</p>
+                                            </div>
+                                            <div className="rounded text-sm">
+                                                <strong className="block text-green-700 mb-1 text-center">Misi:</strong>
+                                                <p className="text-center">{candidate.Misi || '-'}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                                 <button
-                                    onClick={() => handleVote(candidate.ID)}
-                                    disabled={user?.HasVoted}
-                                    className={`w-full py-2 px-4 rounded font-medium text-white transition-colors duration-200 ${user?.HasVoted
-                                        ? 'bg-gray-400 cursor-not-allowed'
-                                        : 'bg-blue-600 hover:bg-blue-700'
-                                        }`}
+                                    onClick={() => handleVoteClick(candidate.ID)}
+                                    className="w-full py-3 bg-green-900 hover:bg-green-950 text-white font-bold rounded-b-lg transition-colors"
                                 >
-                                    {user?.HasVoted ? 'Voted' : 'Vote'}
+                                    Pilih {candidate.Name}
                                 </button>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                )}
             </div>
+
+            {/* Voting Verification Modal */}
+            {selectedCandidate && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-lg p-6 max-w-md w-full">
+                        <h2 className="text-xl font-bold mb-4">Verifikasi Suara</h2>
+                        <p className="text-gray-600 mb-4 text-sm">
+                            Untuk validasi suara, harap unggah kembali foto KTM dan Foto Diri Anda.
+                        </p>
+                        <form onSubmit={handleConfirmVote} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Foto KTM</label>
+                                <input type="file" accept="image/*" onChange={(e) => e.target.files && setKtmImg(e.target.files[0])} required
+                                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-blue-50 file:text-blue-700" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Foto Diri</label>
+                                <input type="file" accept="image/*" onChange={(e) => e.target.files && setSelfImg(e.target.files[0])} required
+                                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-blue-50 file:text-blue-700" />
+                            </div>
+                            <div className="flex gap-3 mt-6">
+                                <button type="button" onClick={() => setSelectedCandidate(null)} className="flex-1 py-2 border border-gray-300 rounded font-bold text-gray-700 hover:bg-gray-50">
+                                    Batal
+                                </button>
+                                <button type="submit" disabled={voting} className="flex-1 py-2 bg-green-600 hover:bg-green-700 rounded font-bold text-white disabled:opacity-50">
+                                    {voting ? 'Mengirim...' : 'Konfirmasi Suara'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
