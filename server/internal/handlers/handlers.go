@@ -7,6 +7,7 @@ import (
 	"voting-backend/internal/db"
 	"voting-backend/internal/imgbb"
 	"voting-backend/internal/models"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -64,6 +65,16 @@ func Login(c *gin.Context) {
 				}
 			}
 		}
+		var endSetting models.Setting
+		if err := db.DB.Where("key = ?", "endTime").First(&endSetting).Error; err == nil && endSetting.Value != "" {
+			endTime, err := time.Parse("2006-01-02T15:04", endSetting.Value) // Adjust format if strictly sent from datetime-local input
+			if err == nil {
+				if time.Now().After(endTime) {
+					c.JSON(http.StatusForbidden, gin.H{"error": "Pemilihan sudah berakhir."})
+					return
+				}
+			}
+		}
 	}
 
 	c.JSON(http.StatusOK, user)
@@ -113,16 +124,16 @@ func Register(c *gin.Context) {
 	}
 
 	profileLink, err := imgbb.UploadImage(profileFile)
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengunggah foto profil ke ImgBB: " + err.Error()})
-        return
-    }
-    
-    ktmLink, err := imgbb.UploadImage(ktmFile)
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengunggah foto KTM ke ImgBB: " + err.Error()})
-        return
-    }
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengunggah foto profil ke ImgBB: " + err.Error()})
+		return
+	}
+
+	ktmLink, err := imgbb.UploadImage(ktmFile)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengunggah foto KTM ke ImgBB: " + err.Error()})
+		return
+	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -168,11 +179,11 @@ func CreateCandidate(c *gin.Context) {
 		return
 	}
 
-    link, err := imgbb.UploadImage(file)
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload to ImgBB: " + err.Error()})
-        return
-    }
+	link, err := imgbb.UploadImage(file)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload to ImgBB: " + err.Error()})
+		return
+	}
 
 	candidate := models.Candidate{
 		Name:     name,
@@ -213,17 +224,17 @@ func UploadVerification(c *gin.Context) {
 		return
 	}
 
-    profileLink, err := imgbb.UploadImage(profileFile)
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload profile: " + err.Error()})
-        return
-    }
-    
-    ktmLink, err := imgbb.UploadImage(ktmFile)
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload KTM: " + err.Error()})
-        return
-    }
+	profileLink, err := imgbb.UploadImage(profileFile)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload profile: " + err.Error()})
+		return
+	}
+
+	ktmLink, err := imgbb.UploadImage(ktmFile)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload KTM: " + err.Error()})
+		return
+	}
 
 	var user models.User
 	if err := db.DB.Where("nim = ?", nim).First(&user).Error; err != nil {
