@@ -3,11 +3,10 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-	"path/filepath"
 	"time"
 	"voting-backend/internal/db"
+	"voting-backend/internal/imgbb"
 	"voting-backend/internal/models"
-
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -113,18 +112,17 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	// Save files
-	profilePath := fmt.Sprintf("uploads/%s_profile%s", nim, filepath.Ext(profileFile.Filename))
-	ktmPath := fmt.Sprintf("uploads/%s_ktm%s", nim, filepath.Ext(ktmFile.Filename))
-
-	if err := c.SaveUploadedFile(profileFile, profilePath); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal menyimpan foto profil"})
-		return
-	}
-	if err := c.SaveUploadedFile(ktmFile, ktmPath); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal menyimpan foto KTM"})
-		return
-	}
+	profileLink, err := imgbb.UploadImage(profileFile)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengunggah foto profil ke ImgBB: " + err.Error()})
+        return
+    }
+    
+    ktmLink, err := imgbb.UploadImage(ktmFile)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengunggah foto KTM ke ImgBB: " + err.Error()})
+        return
+    }
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -139,8 +137,8 @@ func Register(c *gin.Context) {
 		Email:              email,
 		Password:           &passStr,
 		Role:               "voter",
-		ProfileImage:       profilePath,
-		KTMImage:           ktmPath,
+		ProfileImage:       profileLink,
+		KTMImage:           ktmLink,
 		VerificationStatus: "pending",
 	}
 
@@ -170,17 +168,17 @@ func CreateCandidate(c *gin.Context) {
 		return
 	}
 
-	imagePath := fmt.Sprintf("uploads/candidate_%d%s", time.Now().Unix(), filepath.Ext(file.Filename))
-	if err := c.SaveUploadedFile(file, imagePath); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save image"})
-		return
-	}
+    link, err := imgbb.UploadImage(file)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload to ImgBB: " + err.Error()})
+        return
+    }
 
 	candidate := models.Candidate{
 		Name:     name,
 		Visi:     visi,
 		Misi:     misi,
-		ImageURL: "/" + imagePath, // Store relative URL
+		ImageURL: link,
 	}
 
 	if err := db.DB.Create(&candidate).Error; err != nil {
@@ -215,19 +213,17 @@ func UploadVerification(c *gin.Context) {
 		return
 	}
 
-	// Create uploads directory if not exists (handled by SaveUploadedFile usually or manual check, assuming folder exists or created in main)
-
-	profilePath := fmt.Sprintf("uploads/%s_profile%s", nim, filepath.Ext(profileFile.Filename))
-	ktmPath := fmt.Sprintf("uploads/%s_ktm%s", nim, filepath.Ext(ktmFile.Filename))
-
-	if err := c.SaveUploadedFile(profileFile, profilePath); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save profile image"})
-		return
-	}
-	if err := c.SaveUploadedFile(ktmFile, ktmPath); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save KTM image"})
-		return
-	}
+    profileLink, err := imgbb.UploadImage(profileFile)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload profile: " + err.Error()})
+        return
+    }
+    
+    ktmLink, err := imgbb.UploadImage(ktmFile)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload KTM: " + err.Error()})
+        return
+    }
 
 	var user models.User
 	if err := db.DB.Where("nim = ?", nim).First(&user).Error; err != nil {
@@ -235,8 +231,8 @@ func UploadVerification(c *gin.Context) {
 		return
 	}
 
-	user.ProfileImage = profilePath
-	user.KTMImage = ktmPath
+	user.ProfileImage = profileLink
+	user.KTMImage = ktmLink
 	// Don't reset verification status - keep existing status
 	db.DB.Save(&user)
 
