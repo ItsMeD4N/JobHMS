@@ -371,34 +371,34 @@ const AdminPage = () => {
           ) : (
             <div className="space-y-4">
               {pendingVotes.map((v) => (
-                <div key={v.ID} className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col md:flex-row gap-8 items-center shadow-sm">
+                <div key={v.id} className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col md:flex-row gap-8 items-center shadow-sm">
                   <div className="flex-1">
                     <h4 className="text-slate-400 text-xs uppercase tracking-wider mb-1 font-bold">Voter</h4>
-                    <p className="font-bold text-lg text-slate-900">{v.user_name || v.UserName}</p>
+                    <p className="font-bold text-lg text-slate-900">{v.userName}</p>
                   </div>
                   <div className="flex-1 border-l border-slate-100 pl-8">
                     <h4 className="text-slate-400 text-xs uppercase tracking-wider mb-1 font-bold">Voted For</h4>
-                    <p className="font-bold text-lg text-emerald-600">{v.candidate_name || v.CandidateName}</p>
+                    <p className="font-bold text-lg text-emerald-600">{v.candidateName}</p>
                   </div>
 
                   <div className="flex gap-4">
                     <div className="text-center">
                       <span className="text-[10px] text-slate-400 mb-1 block uppercase font-bold">KTM Record</span>
-                      <a href={getImageSrc(v.KTMImage)} target="_blank" className="block w-20 h-20 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden hover:scale-105 transition-transform shadow-sm">
-                        <img src={getImageSrc(v.KTMImage)} className="w-full h-full object-cover" />
+                      <a href={getImageSrc(v.ktmImage)} target="_blank" className="block w-20 h-20 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden hover:scale-105 transition-transform shadow-sm">
+                        <img src={getImageSrc(v.ktmImage)} className="w-full h-full object-cover" />
                       </a>
                     </div>
                     <div className="text-center">
                       <span className="text-[10px] text-slate-400 mb-1 block uppercase font-bold">Verification</span>
-                      <a href={getImageSrc(v.SelfImage)} target="_blank" className="block w-20 h-20 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden hover:scale-105 transition-transform shadow-sm">
-                        <img src={getImageSrc(v.SelfImage)} className="w-full h-full object-cover" />
+                      <a href={getImageSrc(v.selfImage)} target="_blank" className="block w-20 h-20 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden hover:scale-105 transition-transform shadow-sm">
+                        <img src={getImageSrc(v.selfImage)} className="w-full h-full object-cover" />
                       </a>
                     </div>
                   </div>
 
                   <div className="flex flex-col gap-2 min-w-[140px]">
-                    <button onClick={() => handleVerifyVote(v.ID, "approve")} className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-emerald-200 shadow-md transition-all">VALIDATE</button>
-                    <button onClick={() => handleVerifyVote(v.ID, "reject")} className="w-full py-2 bg-white hover:bg-red-50 text-slate-500 hover:text-red-500 border border-slate-200 hover:border-red-200 rounded-lg transition-all">INVALID</button>
+                    <button onClick={() => handleVerifyVote(v.id, "approve")} className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-emerald-200 shadow-md transition-all">VALIDATE</button>
+                    <button onClick={() => handleVerifyVote(v.id, "reject")} className="w-full py-2 bg-white hover:bg-red-50 text-slate-500 hover:text-red-500 border border-slate-200 hover:border-red-200 rounded-lg transition-all">INVALID</button>
                   </div>
                 </div>
               ))}

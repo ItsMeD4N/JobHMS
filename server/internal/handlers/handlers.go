@@ -376,11 +376,7 @@ func Vote(c *gin.Context) {
 		return
 	}
 
-	if err := tx.Create(&vote).Error; err != nil {
-		tx.Rollback()
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal memberikan suara"})
-		return
-	}
+
 
 	tx.Commit()
 

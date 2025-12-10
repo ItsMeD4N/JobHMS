@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from "react";
+import React, { createContext, useContext, useState, useCallback, useMemo, ReactNode } from "react";
 import Toast, { ToastType } from "../components/Toast";
 
 interface ToastMessage {
@@ -29,13 +29,18 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   }, []);
 
-  const success = (msg: string) => addToast(msg, "success");
-  const error = (msg: string) => addToast(msg, "error");
-  const warning = (msg: string) => addToast(msg, "warning");
-  const info = (msg: string) => addToast(msg, "info");
+  const success = useCallback((msg: string) => addToast(msg, "success"), [addToast]);
+  const error = useCallback((msg: string) => addToast(msg, "error"), [addToast]);
+  const warning = useCallback((msg: string) => addToast(msg, "warning"), [addToast]);
+  const info = useCallback((msg: string) => addToast(msg, "info"), [addToast]);
+
+  const value = useMemo(
+    () => ({ addToast, success, error, warning, info }),
+    [addToast, success, error, warning, info]
+  );
 
   return (
-    <ToastContext.Provider value={{ addToast, success, error, warning, info }}>
+    <ToastContext.Provider value={value}>
       {children}
       <div className="fixed top-5 right-5 z-50 flex flex-col items-end">
         {toasts.map((toast) => (
