@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import Steps from '../components/Steps';
 import { useToast } from '../contexts/ToastContext';
-import { Ticket, AlertCircle } from 'lucide-react';
+import { Ticket, AlertCircle, Clock } from 'lucide-react';
 
 interface Candidate {
     ID: number;
@@ -24,8 +24,10 @@ const VotingPage = () => {
     const [selectedCandidate, setSelectedCandidate] = useState<number | null>(null);
     const [selectedCandidateName, setSelectedCandidateName] = useState<string>("");
     const [voting, setVoting] = useState(false);
+    const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
     const navigate = useNavigate();
     const { success, error: showError } = useToast();
+
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -51,19 +53,17 @@ const VotingPage = () => {
         setSelectedCandidateName(candidateName);
     };
 
-    const handleConfirmVote = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!user || selectedCandidate === null) return;
-
+    const handleSubmitVote = async (candidateId: number) => {
+        if (!user) return;
         setVoting(true);
         const data = new FormData();
         data.append('userId', user.ID.toString());
-        data.append('candidateId', selectedCandidate.toString());
+        data.append('candidateId', candidateId.toString());
 
         try {
             await api.post('/vote', data);
             localStorage.removeItem('user');
-            success('Your vote has been cast successfully!');
+            success(candidateId === 0 && timeLeft === 0 ? 'Waktu habis! Suara otomatis masuk ke Kotak Kosong.' : 'Your vote has been cast successfully!');
             navigate('/login', { state: { message: 'Suara berhasil dikirim! Terima kasih telah berpartisipasi.' } });
 
         } catch (error: any) {
@@ -73,16 +73,51 @@ const VotingPage = () => {
         }
     };
 
+    // Auto-vote Timer Effect
+    useEffect(() => {
+        if (!user || user.HasVoted) return;
+
+        if (timeLeft === 0) {
+            handleSubmitVote(0); // Auto vote Kotak Kosong
+            return;
+        }
+
+        const timer = setInterval(() => {
+            setTimeLeft((prev) => prev - 1);
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [timeLeft, user]);
+
+    const handleConfirmVote = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (selectedCandidate === null) return;
+        await handleSubmitVote(selectedCandidate);
+    };
+
     return (
         <div className="min-h-screen bg-slate-50 p-6 md:p-12 font-sans">
             <div className="max-w-7xl mx-auto">
                 <Steps currentStep={2} />
-                
+
+                {/* Timer Display */}
+                {!user?.HasVoted && (
+                    <div className="fixed top-4 right-4 z-50 animate-bounce-in">
+                        <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-mono font-bold shadow-lg border-2 ${timeLeft < 60 ? 'bg-red-50 text-red-600 border-red-200 animate-pulse' : 'bg-white text-slate-700 border-slate-200'
+                            }`}>
+                            <Clock size={18} />
+                            <span>
+                                {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, '0')}
+                            </span>
+                        </div>
+                    </div>
+                )}
+
                 <div className="text-center mb-16 animate-fade-in-up">
                     <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-2 inline-block">Official Ballot</span>
                     <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-4 tracking-tight">Cast Your Vote</h1>
                     <p className="text-slate-500 max-w-2xl mx-auto text-lg leading-relaxed">
-                        Select your preferred candidate for the <strong>Chairman of BP HMS 2025/2026</strong>. 
+                        Select your preferred candidate for the <strong>Chairman of BP HMS 2025/2026</strong>.
                         Choose wisely, as your vote cannot be changed once submitted.
                     </p>
                 </div>
@@ -104,27 +139,27 @@ const VotingPage = () => {
                                 style={{ animationDelay: `${index * 0.1}s` }}
                             >
                                 <div className="absolute top-0 w-full h-32 bg-gradient-to-b from-emerald-50 to-transparent z-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                
+
                                 <div className="p-8 flex-1 flex flex-col items-center z-10">
                                     <div className="w-48 h-48 rounded-full p-1.5 bg-gradient-to-tr from-emerald-400 to-emerald-600 shadow-lg mb-6 group-hover:scale-105 transition-transform duration-500">
                                         <div className="w-full h-full rounded-full border-4 border-white overflow-hidden bg-slate-200 relative">
-                                             <img
+                                            <img
                                                 src={`http://localhost:8080${candidate.ImageURL}`}
                                                 alt={candidate.Name}
                                                 className="w-full h-full object-cover"
                                             />
                                         </div>
                                     </div>
-                                    
+
                                     <h3 className="text-2xl font-bold text-slate-900 mb-6 text-center leading-tight">{candidate.Name}</h3>
-                                    
+
                                     <div className="w-full space-y-4 mb-4">
                                         <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 hover:border-emerald-100 transition-colors">
                                             <h4 className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-2 text-center">Vision</h4>
                                             <p className="text-sm text-slate-600 text-center leading-relaxed line-clamp-3">{candidate.Visi || '-'}</p>
                                         </div>
                                         <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 hover:border-emerald-100 transition-colors">
-                                             <h4 className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-2 text-center">Mission</h4>
+                                            <h4 className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-2 text-center">Mission</h4>
                                             <p className="text-sm text-slate-600 text-center leading-relaxed line-clamp-3">{candidate.Misi || '-'}</p>
                                         </div>
                                     </div>
@@ -142,12 +177,12 @@ const VotingPage = () => {
 
                         {/* Kotak Kosong */}
                         <div className="bg-white rounded-[2rem] shadow-xl shadow-slate-200/60 overflow-hidden flex flex-col hover:shadow-2xl hover:shadow-slate-300/50 hover:-translate-y-2 transition-all duration-300 border border-slate-100 relative group">
-                            
+
                             <div className="p-8 flex-1 flex flex-col items-center z-10">
                                 <div className="w-48 h-48 rounded-full p-1.5 bg-slate-200 shadow-inner mb-6 flex items-center justify-center group-hover:bg-slate-300 transition-colors">
-                                     <div className="w-full h-full rounded-full border-4 border-white bg-slate-100 flex items-center justify-center overflow-hidden">
+                                    <div className="w-full h-full rounded-full border-4 border-white bg-slate-100 flex items-center justify-center overflow-hidden">
                                         <div className="w-24 h-24 border-4 border-dashed border-slate-300 rounded-lg"></div>
-                                     </div>
+                                    </div>
                                 </div>
 
                                 <h2 className="text-2xl font-bold text-slate-900 mb-4 text-center">Abstain / Empty Box</h2>
@@ -180,7 +215,7 @@ const VotingPage = () => {
                         <p className="text-slate-500 mb-8 text-center leading-relaxed">
                             Are you sure you want to cast your vote for <strong className="text-slate-900 block mt-1 text-lg">{selectedCandidateName}</strong>?
                         </p>
-                        
+
                         <div className="bg-amber-50 border border-amber-100 p-3 rounded-xl flex items-start gap-3 mb-6">
                             <AlertCircle className="text-amber-500 shrink-0 mt-0.5" size={18} />
                             <p className="text-xs text-amber-700 text-left">This action is final and cannot be undone once submitted.</p>
