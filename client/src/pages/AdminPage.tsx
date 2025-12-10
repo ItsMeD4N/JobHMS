@@ -94,7 +94,7 @@ const AdminPage = () => {
 
   useEffect(() => {
     if (!user || user.Role !== "admin") {
-      navigate("/login-admin");
+      navigate("/loginadmin");
       return;
     }
     fetchData();
@@ -141,7 +141,7 @@ const AdminPage = () => {
       fetchVerifications();
     } catch (err) { showError("Action failed"); }
   };
-  
+
   const handleVerifyVote = async (voteId: number, action: string) => {
     try {
       await api.post("/admin/votes/verify", { voteId, action });
@@ -149,7 +149,7 @@ const AdminPage = () => {
       fetchPendingVotes();
     } catch (err) { showError("Action failed"); }
   };
-  
+
   const handleDeleteCandidate = async (id: number) => {
     if (!window.confirm("Are you sure?")) return;
     try {
@@ -182,29 +182,29 @@ const AdminPage = () => {
   };
 
   const handleSaveSettings = async (e: React.FormEvent) => {
-      e.preventDefault();
-      try {
-          await api.post("/admin/settings", electionSettings);
-          success("Settings saved successfully");
-      } catch (err) {
-          showError("Failed to save settings");
-      }
+    e.preventDefault();
+    try {
+      await api.post("/admin/settings", electionSettings);
+      success("Settings saved successfully");
+    } catch (err) {
+      showError("Failed to save settings");
+    }
   }
 
   const getImageSrc = (path: string) => {
-      if (!path) return "";
-      if (path.startsWith("http")) return path;
-      return `http://localhost:8080${path}`;
+    if (!path) return "";
+    if (path.startsWith("http")) return path;
+    return `http://localhost:8080${path}`;
   };
 
   // --- Sub-Components ---
   const StatCard = ({ label, value, color, icon }: any) => (
     <div className="bg-white border border-slate-200 p-6 rounded-2xl flex flex-col shadow-sm hover:shadow-md transition-shadow">
       <div className="flex justify-between items-start mb-4">
-          <span className="text-slate-500 text-sm font-semibold uppercase tracking-wider">
-            {label}
-          </span>
-          {icon && <div className={`p-2 rounded-lg bg-slate-50 text-slate-400`}>{icon}</div>}
+        <span className="text-slate-500 text-sm font-semibold uppercase tracking-wider">
+          {label}
+        </span>
+        {icon && <div className={`p-2 rounded-lg bg-slate-50 text-slate-400`}>{icon}</div>}
       </div>
       <span className={`text-4xl font-bold ${color}`}>{value}</span>
     </div>
@@ -217,42 +217,41 @@ const AdminPage = () => {
         <div>
           <h1 className="text-3xl font-bold text-slate-900 mb-2">
             {activeTab === "recap" ? "Dashboard Overview" :
-             activeTab === "mahasiswa" ? "User Registrations" :
-             activeTab === "verifikasi_suara" ? "Vote Verification" :
-             activeTab === "kandidat" ? "Candidate Management" :
-             "Election Settings"}
+              activeTab === "mahasiswa" ? "User Registrations" :
+                activeTab === "verifikasi_suara" ? "Vote Verification" :
+                  activeTab === "kandidat" ? "Candidate Management" :
+                    "Election Settings"}
           </h1>
           <p className="text-slate-500 text-sm">
             Manage your election system efficiently.
           </p>
         </div>
         <div className="flex gap-3">
-            <div className="bg-white border border-slate-200 rounded-xl p-1 flex shadow-sm">
-                {["mahasiswa", "verifikasi_suara", "kandidat", "recap", "settings"].map(tab => (
-                    <button
-                        key={tab}
-                        onClick={() => setActiveTab(tab)}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                            activeTab === tab 
-                            ? "bg-emerald-50 text-emerald-700 shadow-sm" 
-                            : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
-                        }`}
-                    >
-                        {tab === "mahasiswa" && "Users"}
-                        {tab === "verifikasi_suara" && "Votes"}
-                        {tab === "kandidat" && "Candidates"}
-                        {tab === "recap" && "Results"}
-                        {tab === "settings" && "Settings"}
-                    </button>
-                ))}
-            </div>
-            <button
-                onClick={fetchData}
-                className="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors text-slate-500 hover:text-emerald-600 shadow-sm"
-                title="Refresh Data"
-            >
-                <RefreshCw size={20} />
-            </button>
+          <div className="bg-white border border-slate-200 rounded-xl p-1 flex shadow-sm">
+            {["mahasiswa", "verifikasi_suara", "kandidat", "recap", "settings"].map(tab => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab
+                    ? "bg-emerald-50 text-emerald-700 shadow-sm"
+                    : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+                  }`}
+              >
+                {tab === "mahasiswa" && "Users"}
+                {tab === "verifikasi_suara" && "Votes"}
+                {tab === "kandidat" && "Candidates"}
+                {tab === "recap" && "Results"}
+                {tab === "settings" && "Settings"}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={fetchData}
+            className="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors text-slate-500 hover:text-emerald-600 shadow-sm"
+            title="Refresh Data"
+          >
+            <RefreshCw size={20} />
+          </button>
         </div>
       </div>
 
@@ -288,10 +287,10 @@ const AdminPage = () => {
                     return (
                       <tr key={idx} className="hover:bg-slate-50 transition-colors">
                         <td className="p-5 font-medium text-slate-900 flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden">
-                                {r.imageUrl && <img src={getImageSrc(r.imageUrl)} className="w-full h-full object-cover" />}
-                            </div>
-                            {r.Name || r.name}
+                          <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden">
+                            {r.imageUrl && <img src={getImageSrc(r.imageUrl)} className="w-full h-full object-cover" />}
+                          </div>
+                          {r.Name || r.name}
                         </td>
                         <td className="p-5 text-right font-mono text-xl text-emerald-600 font-bold">
                           {count}
@@ -342,8 +341,8 @@ const AdminPage = () => {
 
                     <div className="flex gap-4">
                       <a href={getImageSrc(v.KTMImage)} target="_blank" rel="noreferrer" className="group relative block w-32 h-20 bg-slate-100 rounded-lg overflow-hidden border border-slate-200 hover:border-emerald-500 transition-colors">
-                         <img src={getImageSrc(v.KTMImage)} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
-                         <span className="absolute bottom-0 left-0 bg-slate-900/70 text-white text-[10px] w-full text-center py-1 backdrop-blur-sm">View KTM</span>
+                        <img src={getImageSrc(v.KTMImage)} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
+                        <span className="absolute bottom-0 left-0 bg-slate-900/70 text-white text-[10px] w-full text-center py-1 backdrop-blur-sm">View KTM</span>
                       </a>
                     </div>
 
@@ -379,28 +378,28 @@ const AdminPage = () => {
                     <p className="font-bold text-lg text-slate-900">{v.user_name || v.UserName}</p>
                   </div>
                   <div className="flex-1 border-l border-slate-100 pl-8">
-                     <h4 className="text-slate-400 text-xs uppercase tracking-wider mb-1 font-bold">Voted For</h4>
+                    <h4 className="text-slate-400 text-xs uppercase tracking-wider mb-1 font-bold">Voted For</h4>
                     <p className="font-bold text-lg text-emerald-600">{v.candidate_name || v.CandidateName}</p>
                   </div>
 
                   <div className="flex gap-4">
                     <div className="text-center">
                       <span className="text-[10px] text-slate-400 mb-1 block uppercase font-bold">KTM Record</span>
-                       <a href={getImageSrc(v.KTMImage)} target="_blank" className="block w-20 h-20 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden hover:scale-105 transition-transform shadow-sm">
-                          <img src={getImageSrc(v.KTMImage)} className="w-full h-full object-cover" />
-                       </a>
+                      <a href={getImageSrc(v.KTMImage)} target="_blank" className="block w-20 h-20 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden hover:scale-105 transition-transform shadow-sm">
+                        <img src={getImageSrc(v.KTMImage)} className="w-full h-full object-cover" />
+                      </a>
                     </div>
                     <div className="text-center">
                       <span className="text-[10px] text-slate-400 mb-1 block uppercase font-bold">Verification</span>
-                       <a href={getImageSrc(v.SelfImage)} target="_blank" className="block w-20 h-20 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden hover:scale-105 transition-transform shadow-sm">
-                          <img src={getImageSrc(v.SelfImage)} className="w-full h-full object-cover" />
-                       </a>
+                      <a href={getImageSrc(v.SelfImage)} target="_blank" className="block w-20 h-20 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden hover:scale-105 transition-transform shadow-sm">
+                        <img src={getImageSrc(v.SelfImage)} className="w-full h-full object-cover" />
+                      </a>
                     </div>
                   </div>
 
                   <div className="flex flex-col gap-2 min-w-[140px]">
-                     <button onClick={() => handleVerifyVote(v.ID, "approve")} className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-emerald-200 shadow-md transition-all">VALIDATE</button>
-                      <button onClick={() => handleVerifyVote(v.ID, "reject")} className="w-full py-2 bg-white hover:bg-red-50 text-slate-500 hover:text-red-500 border border-slate-200 hover:border-red-200 rounded-lg transition-all">INVALID</button>
+                    <button onClick={() => handleVerifyVote(v.ID, "approve")} className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-emerald-200 shadow-md transition-all">VALIDATE</button>
+                    <button onClick={() => handleVerifyVote(v.ID, "reject")} className="w-full py-2 bg-white hover:bg-red-50 text-slate-500 hover:text-red-500 border border-slate-200 hover:border-red-200 rounded-lg transition-all">INVALID</button>
                   </div>
                 </div>
               ))}
@@ -413,41 +412,41 @@ const AdminPage = () => {
       {activeTab === "kandidat" && (
         <div className="space-y-8">
           <div className="flex justify-between items-center bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-             <h2 className="font-bold text-xl ml-2 text-slate-900">Candidates</h2>
-             <button
-                onClick={() => setIsAddCandidateOpen(!isAddCandidateOpen)}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-colors ${isAddCandidateOpen ? 'bg-red-50 text-red-600' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-200'}`}
-             >
-                {isAddCandidateOpen ? <><XCircle size={18}/> Cancel</> : <><Plus size={18}/> Add Candidate</>}
-             </button>
+            <h2 className="font-bold text-xl ml-2 text-slate-900">Candidates</h2>
+            <button
+              onClick={() => setIsAddCandidateOpen(!isAddCandidateOpen)}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-colors ${isAddCandidateOpen ? 'bg-red-50 text-red-600' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-200'}`}
+            >
+              {isAddCandidateOpen ? <><XCircle size={18} /> Cancel</> : <><Plus size={18} /> Add Candidate</>}
+            </button>
           </div>
 
           {isAddCandidateOpen && (
             <div className="bg-white border border-slate-200 p-8 rounded-2xl max-w-2xl mx-auto shadow-xl animate-fade-in">
-                <h3 className="text-2xl font-bold mb-8 text-slate-900 text-center">New Candidate</h3>
-                <form onSubmit={handleAddCandidate} className="space-y-6">
+              <h3 className="text-2xl font-bold mb-8 text-slate-900 text-center">New Candidate</h3>
+              <form onSubmit={handleAddCandidate} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Name</label>
+                  <input className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Candidate Name" value={newCandidate.name} onChange={e => setNewCandidate({ ...newCandidate, name: e.target.value })} required />
+                </div>
+                <div className="grid grid-cols-1 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Name</label>
-                    <input className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Candidate Name" value={newCandidate.name} onChange={e => setNewCandidate({...newCandidate, name: e.target.value})} required />
-                  </div>
-                  <div className="grid grid-cols-1 gap-6">
-                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Vision (Visi)</label>
-                        <textarea className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 min-h-[100px] focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Short, inspiring vision..." value={newCandidate.visi} onChange={e => setNewCandidate({...newCandidate, visi: e.target.value})} required />
-                     </div>
-                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Mission (Misi)</label>
-                        <textarea className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 min-h-[100px] focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Detailed mission points..." value={newCandidate.misi} onChange={e => setNewCandidate({...newCandidate, misi: e.target.value})} required />
-                     </div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Vision (Visi)</label>
+                    <textarea className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 min-h-[100px] focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Short, inspiring vision..." value={newCandidate.visi} onChange={e => setNewCandidate({ ...newCandidate, visi: e.target.value })} required />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Photo</label>
-                    <input type="file" className="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer bg-slate-50 rounded-xl border border-slate-200" onChange={e => e.target.files && setCandidateImg(e.target.files[0])} required />
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Mission (Misi)</label>
+                    <textarea className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 min-h-[100px] focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Detailed mission points..." value={newCandidate.misi} onChange={e => setNewCandidate({ ...newCandidate, misi: e.target.value })} required />
                   </div>
-                  <button type="submit" disabled={submitting} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-200 mt-4">
-                    {submitting ? "Saving..." : "Create Candidate"}
-                  </button>
-                </form>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Photo</label>
+                  <input type="file" className="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer bg-slate-50 rounded-xl border border-slate-200" onChange={e => e.target.files && setCandidateImg(e.target.files[0])} required />
+                </div>
+                <button type="submit" disabled={submitting} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-200 mt-4">
+                  {submitting ? "Saving..." : "Create Candidate"}
+                </button>
+              </form>
             </div>
           )}
 
@@ -455,9 +454,9 @@ const AdminPage = () => {
             {candidates.map(c => (
               <div key={c.ID} className="bg-white border border-slate-200 rounded-2xl overflow-hidden group hover:border-emerald-200 hover:shadow-lg transition-all duration-300">
                 <div className="aspect-video relative overflow-hidden">
-                   <img src={getImageSrc(c.ImageURL)} alt={c.Name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent opacity-60" />
-                   <h3 className="absolute bottom-4 left-4 font-bold text-xl text-white drop-shadow-md">{c.Name}</h3>
+                  <img src={getImageSrc(c.ImageURL)} alt={c.Name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent opacity-60" />
+                  <h3 className="absolute bottom-4 left-4 font-bold text-xl text-white drop-shadow-md">{c.Name}</h3>
                 </div>
                 <div className="p-6 space-y-4">
                   <div>
@@ -483,18 +482,18 @@ const AdminPage = () => {
       {/* --- SETTINGS TAB --- */}
       {activeTab === "settings" && (
         <div className="max-w-xl mx-auto bg-white border border-slate-200 rounded-2xl p-10 shadow-sm mt-8">
-            <h3 className="text-2xl font-bold mb-8 text-slate-900 border-b border-slate-100 pb-4">Election Timing</h3>
-            <form onSubmit={handleSaveSettings} className="space-y-6">
-                <div>
-                    <label className="block text-slate-600 font-medium mb-2">Start Time</label>
-                    <input type="datetime-local" value={electionSettings.startTime} onChange={(e) => setElectionSettings({...electionSettings, startTime: e.target.value})} className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl p-3.5 focus:ring-2 focus:ring-emerald-500 outline-none" />
-                </div>
-                <div>
-                     <label className="block text-slate-600 font-medium mb-2">End Time</label>
-                     <input type="datetime-local" value={electionSettings.endTime} onChange={(e) => setElectionSettings({...electionSettings, endTime: e.target.value})} className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl p-3.5 focus:ring-2 focus:ring-emerald-500 outline-none" />
-                 </div>
-                 <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-emerald-200 mt-4">Save Settings</button>
-            </form>
+          <h3 className="text-2xl font-bold mb-8 text-slate-900 border-b border-slate-100 pb-4">Election Timing</h3>
+          <form onSubmit={handleSaveSettings} className="space-y-6">
+            <div>
+              <label className="block text-slate-600 font-medium mb-2">Start Time</label>
+              <input type="datetime-local" value={electionSettings.startTime} onChange={(e) => setElectionSettings({ ...electionSettings, startTime: e.target.value })} className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl p-3.5 focus:ring-2 focus:ring-emerald-500 outline-none" />
+            </div>
+            <div>
+              <label className="block text-slate-600 font-medium mb-2">End Time</label>
+              <input type="datetime-local" value={electionSettings.endTime} onChange={(e) => setElectionSettings({ ...electionSettings, endTime: e.target.value })} className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl p-3.5 focus:ring-2 focus:ring-emerald-500 outline-none" />
+            </div>
+            <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-emerald-200 mt-4">Save Settings</button>
+          </form>
         </div>
       )}
     </AdminLayout>
