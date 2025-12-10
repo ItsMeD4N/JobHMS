@@ -27,14 +27,13 @@ interface Verification {
 }
 
 interface VoteRequest {
-  ID: number;
-  user_name?: string;
-  UserName?: string;
-  user_nim?: string;
-  candidate_name?: string;
-  CandidateName?: string;
-  KTMImage: string;
-  SelfImage: string;
+  id: number;
+  userName: string;
+  userNim: string;
+  userEmail: string;
+  ktmImage: string;
+  selfImage: string;
+  candidateName: string;
 }
 
 interface Candidate {
@@ -233,8 +232,8 @@ const AdminPage = () => {
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab
-                    ? "bg-emerald-50 text-emerald-700 shadow-sm"
-                    : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+                  ? "bg-emerald-50 text-emerald-700 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
                   }`}
               >
                 {tab === "mahasiswa" && "Users"}

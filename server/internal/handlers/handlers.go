@@ -391,7 +391,7 @@ func GetPendingVotes(c *gin.Context) {
 	var votes []PendingVote
 
 	db.DB.Table("votes").
-		Select("votes.id, users.name as user_name, users.nim as user_nim, users.email as user_email, votes.ktm_image, votes.self_image, candidates.name as candidate_name").
+		Select("votes.id as id, users.name as userName, users.nim as userNim, users.email as userEmail, votes.ktm_image as ktmImage, votes.self_image as selfImage, COALESCE(candidates.name, 'Kotak Kosong') as candidateName").
 		Joins("left join users on users.id = votes.user_id").
 		Joins("left join candidates on candidates.id = votes.candidate_id").
 		Where("votes.is_approved = ?", false).
@@ -422,7 +422,7 @@ func SearchVotes(c *gin.Context) {
 
 	searchPattern := "%" + query + "%"
 	db.DB.Table("votes").
-		Select("votes.id, votes.user_id, users.name as user_name, users.nim as user_nim, users.email as user_email, votes.ktm_image, votes.self_image, candidates.name as candidate_name, votes.is_approved").
+		Select("votes.id as id, votes.user_id as userId, users.name as userName, users.nim as userNim, users.email as userEmail, votes.ktm_image as ktmImage, votes.self_image as selfImage, COALESCE(candidates.name, 'Kotak Kosong') as candidateName, votes.is_approved as isApproved").
 		Joins("left join users on users.id = votes.user_id").
 		Joins("left join candidates on candidates.id = votes.candidate_id").
 		Where("users.nim ILIKE ? OR users.name ILIKE ?", searchPattern, searchPattern).
