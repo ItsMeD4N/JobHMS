@@ -109,6 +109,17 @@ const LoginPage = () => {
               required
             />
           </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Token</label>
+            <input
+              type="password"
+              value={token}
+              onChange={(e) => setToken(e.target.value)}
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all text-sm font-mono"
+              placeholder="••••••••"
+              required
+            />
+          </div>
           <button
             type="submit"
             className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-lg shadow-emerald-600/20 transition-all transform active:scale-95"
