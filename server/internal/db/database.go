@@ -12,7 +12,7 @@ import (
 var DB *gorm.DB
 
 func Connect() {
-	forceDSN := "postgresql://postgres.bahhcjwxezopjyuqmgsb:@Hmsitb1006@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres" 
+	forceDSN := "postgresql://postgres.bahhcjwxezopjyuqmgsb:@Hmsitb1006@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?prefer_simple_protocol=true" 
 	var dsn string
 	if forceDSN != "" {
 		dsn = forceDSN
