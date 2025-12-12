@@ -1,7 +1,9 @@
 package email
 
 import (
+	"crypto/tls"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 
@@ -23,7 +25,11 @@ func getDialer() (*gomail.Dialer, error) {
 		return nil, err
 	}
 
-	return gomail.NewDialer(host, port, user, pass), nil
+	d := gomail.NewDialer(host, port, user, pass)
+	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+	log.Printf("Dialing SMTP server: %s:%d", host, port)
+	return d, nil
 }
 
 func SendWelcomeEmail(toEmail, name string) error {
