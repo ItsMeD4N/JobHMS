@@ -67,7 +67,7 @@ const LoginPage = () => {
       <div className="bg-white p-10 rounded-2xl shadow-xl w-full max-w-md border border-slate-100">
         <div className="flex justify-center items-center gap-5 mb-8">
           <img src="/logo_hms.png" alt="logo HMS" className="h-16 w-16 drop-shadow-sm"></img>
-          <img src="/logo192.png" alt="logo pemilu" className="h-16 w-16 drop-shadow-sm"></img>
+          <img src="/logo192.jpg" alt="logo pemilu" className="h-16 w-16 drop-shadow-sm"></img>
         </div>
 
         <div className="text-center mb-8">
