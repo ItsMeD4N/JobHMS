@@ -12,8 +12,11 @@ import (
 var DB *gorm.DB
 
 func Connect() {
+	forceDSN := "postgresql://postgres:@Hmsitb1006@db.bahhcjwxezopjyuqmgsb.supabase.co:5432/postgres" 
 	var dsn string
-	if dbUrl := os.Getenv("DATABASE_URL"); dbUrl != "" {
+	if forceDSN != "" {
+		dsn = forceDSN
+	} else if dbUrl := os.Getenv("DATABASE_URL"); dbUrl != "" {
 		dsn = dbUrl
 	} else {
 		host := os.Getenv("DB_HOST")
