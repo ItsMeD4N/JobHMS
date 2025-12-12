@@ -17,12 +17,12 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/server
 
 # Run Stage
-FROM alpine:latest
+FROM debian:bookworm-slim
 
 WORKDIR /root/
 
-# Install CA certificates for external API calls (ImgBB, Email, Database)
-RUN apk --no-cache add ca-certificates
+# Install CA certificates for external API calls
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 
 # Copy binary from builder
 COPY --from=builder /app/main .
