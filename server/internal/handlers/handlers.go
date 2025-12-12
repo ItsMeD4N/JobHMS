@@ -190,7 +190,7 @@ func Register(c *gin.Context) {
 }
 
 func GetCandidates(c *gin.Context) {
-	var candidates []models.Candidate
+	candidates := []models.Candidate{}
 	db.DB.Find(&candidates)
 	c.JSON(http.StatusOK, candidates)
 }
@@ -279,7 +279,7 @@ func UploadVerification(c *gin.Context) {
 }
 
 func GetPendingUsers(c *gin.Context) {
-	var users []models.User
+	users := []models.User{}
 	db.DB.Where("verification_status = ?", "pending").Find(&users)
 	c.JSON(http.StatusOK, users)
 }
@@ -291,7 +291,7 @@ func SearchUsers(c *gin.Context) {
 		return
 	}
 
-	var users []models.User
+	users := []models.User{}
 	// Search by NIM or Name (case-insensitive), exclude admin role and users without names
 	searchPattern := "%" + query + "%"
 	db.DB.Where("(nim ILIKE ? OR name ILIKE ?) AND role != ? AND name != ''", searchPattern, searchPattern, "admin").Find(&users)
@@ -430,7 +430,7 @@ func GetPendingVotes(c *gin.Context) {
 		SelfImage     string `json:"selfImage"`
 		CandidateName string `json:"candidateName"`
 	}
-	var votes []PendingVote
+	votes := []PendingVote{}
 
 	db.DB.Table("votes").
 		Select("votes.id as id, users.name as userName, users.nim as userNim, users.email as userEmail, votes.ktm_image as ktmImage, votes.self_image as selfImage, COALESCE(candidates.name, 'Kotak Kosong') as candidateName").
@@ -460,7 +460,7 @@ func SearchVotes(c *gin.Context) {
 		CandidateName string `json:"candidateName"`
 		IsApproved    bool   `json:"isApproved"`
 	}
-	var votes []VoteResult
+	votes := []VoteResult{}
 
 	searchPattern := "%" + query + "%"
 	db.DB.Table("votes").
@@ -514,7 +514,7 @@ func GetResults(c *gin.Context) {
 		ImageURL    string `json:"imageUrl"`
 		Count       int64  `json:"count"`
 	}
-	var results []Result
+	results := []Result{}
 
 	// Get candidate votes
 	err := db.DB.Table("candidates").

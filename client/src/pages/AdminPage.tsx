@@ -111,7 +111,7 @@ const AdminPage = () => {
   const fetchVerifications = async () => {
     try {
       const res = await api.get("/admin/users/pending");
-      setVerifications(res.data);
+      setVerifications(res.data || []);
     } catch (err) { console.error(err); }
   };
   const fetchPendingVotes = async () => {
@@ -123,13 +123,13 @@ const AdminPage = () => {
   const fetchResults = async () => {
     try {
       const res = await api.get("/admin/results");
-      setResults(res.data);
+      setResults(res.data || []);
     } catch (err) { console.error(err); }
   };
   const fetchCandidates = async () => {
     try {
       const res = await api.get("/candidates");
-      setCandidates(res.data);
+      setCandidates(res.data || []);
     } catch (err) { console.error(err); }
   };
 
