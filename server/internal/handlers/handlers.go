@@ -15,6 +15,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+var wibLocation = time.FixedZone("WIB", 7*3600)
+
 type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -69,11 +71,11 @@ func Login(c *gin.Context) {
 		// Check Election Timing for Login (Allowed 24h before)
 		var startSetting models.Setting
 		if err := db.DB.Where("key = ?", "startTime").First(&startSetting).Error; err == nil && startSetting.Value != "" {
-			startTime, err := time.ParseInLocation("2006-01-02T15:04", startSetting.Value, time.Local)
+			startTime, err := time.ParseInLocation("2006-01-02T15:04", startSetting.Value, wibLocation)
 			if err == nil {
 				// Allow login 24 hours before election starts for verification
 				allowedLoginTime := startTime.Add(-24 * time.Hour)
-				if time.Now().Before(allowedLoginTime) {
+				if time.Now().In(wibLocation).Before(allowedLoginTime) {
 					c.JSON(http.StatusForbidden, gin.H{"error": "Login hanya dibuka 24 jam sebelum pemilihan dimulai."})
 					return
 				}
@@ -81,9 +83,9 @@ func Login(c *gin.Context) {
 		}
 		var endSetting models.Setting
 		if err := db.DB.Where("key = ?", "endTime").First(&endSetting).Error; err == nil && endSetting.Value != "" {
-			endTime, err := time.ParseInLocation("2006-01-02T15:04", endSetting.Value, time.Local) // Adjust format if strictly sent from datetime-local input
+			endTime, err := time.ParseInLocation("2006-01-02T15:04", endSetting.Value, wibLocation) 
 			if err == nil {
-				if time.Now().After(endTime) {
+				if time.Now().In(wibLocation).After(endTime) {
 					c.JSON(http.StatusForbidden, gin.H{"error": "Pemilihan sudah berakhir."})
 					return
 				}
@@ -131,9 +133,9 @@ func Register(c *gin.Context) {
 
 	var startSetting models.Setting
 	if err := db.DB.Where("key = ?", "startTime").First(&startSetting).Error; err == nil && startSetting.Value != "" {
-		startTime, err := time.ParseInLocation("2006-01-02T15:04", startSetting.Value, time.Local) // Adjust format if strictly sent from datetime-local input
+		startTime, err := time.ParseInLocation("2006-01-02T15:04", startSetting.Value, wibLocation) // Adjust format if strictly sent from datetime-local input
 		if err == nil {
-			if time.Now().After(startTime) {
+			if time.Now().In(wibLocation).After(startTime) {
 				c.JSON(http.StatusForbidden, gin.H{"error": "Waktu registrasi sudah berakhir."})
 				return
 			}
@@ -370,9 +372,9 @@ func Vote(c *gin.Context) {
 	// Double-check election timing strictly for Voting action
 	var startSetting models.Setting
 	if err := db.DB.Where("key = ?", "startTime").First(&startSetting).Error; err == nil && startSetting.Value != "" {
-		startTime, err := time.ParseInLocation("2006-01-02T15:04", startSetting.Value, time.Local)
+		startTime, err := time.ParseInLocation("2006-01-02T15:04", startSetting.Value, wibLocation)
 		if err == nil {
-			if time.Now().Before(startTime) {
+			if time.Now().In(wibLocation).Before(startTime) {
 				c.JSON(http.StatusForbidden, gin.H{"error": "Pemilihan belum dimulai."})
 				return
 			}
