@@ -94,6 +94,20 @@ const VotingPage = () => {
         if (!entryTime) {
             entryTime = Date.now().toString();
             localStorage.setItem(STORAGE_KEY, entryTime);
+
+            // SYNC TO BACKEND
+            if (user) {
+                api.post('/enter-voting', { userId: user.ID })
+                    .catch(err => console.error("Failed to sync entry time", err));
+            }
+        } else {
+             // Optional: Sync anyway if backend missed it? 
+             // Better: Only on first detection to avoid resetting backend if logic changes
+             // Backend logic protects against reset logic anyway.
+             if (user) {
+                 api.post('/enter-voting', { userId: user.ID })
+                     .catch(err => console.error("Failed to sync entry time", err));
+             }
         }
 
         const calculateTimeLeft = () => {

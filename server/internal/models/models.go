@@ -18,6 +18,7 @@ type User struct {
 	KTMImage           string
 	VerificationStatus string `gorm:"default:'none'"` // 'none', 'pending', 'approved', 'rejected'
 	Token              string // Added Token
+	VoteEntryTime      *time.Time // Added for 5-minute timeout check
 }
 
 type Candidate struct {

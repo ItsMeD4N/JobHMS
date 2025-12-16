@@ -432,6 +432,20 @@ func Vote(c *gin.Context) {
 		Status:      "pending",
 	}
 
+	// CHECK 5-MINUTE TIME LIMIT
+	if user.VoteEntryTime == nil {
+		// Strict: If they never entered via EnterVoting, reject or block. 
+		// Decision: Reject as "Tidak Sah" because flow was skipped.
+		vote.Status = "rejected"
+	} else {
+		// Calculate time difference
+		if time.Since(*user.VoteEntryTime) > 5*time.Minute {
+			vote.Status = "rejected"
+		} else {
+			vote.Status = "pending"
+		}
+	}
+
 	// Handle Kotak Kosong (ID=0)
 	if candidateIDStr == "0" {
 		vote.CandidateID = 0
@@ -453,6 +467,12 @@ func Vote(c *gin.Context) {
 
 	tx.Commit()
 
+	// Return appropriate message based on status
+	if vote.Status == "rejected" {
+		c.JSON(http.StatusOK, gin.H{"message": "Waktu habis (5 menit). Suara Anda dianggap TIDAK SAH."})
+		return
+	}
+
 	go func() {
 		candidateName := "Kotak Kosong"
 		if candidateIDStr != "0" {
@@ -469,6 +489,36 @@ func Vote(c *gin.Context) {
 	}()
 
 	c.JSON(http.StatusOK, gin.H{"message": "Suara berhasil diberikan"})
+}
+
+func EnterVoting(c *gin.Context) {
+	var req struct {
+		UserID uint `json:"userId"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		return
+	}
+
+	var user models.User
+	if err := db.DB.First(&user, req.UserID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	// IF user has not entered yet, set the time.
+	// If they refresh, do NOT update the time (keep the first entry time).
+	if user.VoteEntryTime == nil {
+		now := time.Now()
+		user.VoteEntryTime = &now
+		db.DB.Save(&user)
+	}
+
+	// Return the entry time so frontend can sync if needed (optional)
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Entry time recorded", 
+		"entryTime": user.VoteEntryTime,
+	})
 }
 
 func GetPendingVotes(c *gin.Context) {

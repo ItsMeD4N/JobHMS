@@ -103,8 +103,12 @@ func main() {
 	r.POST("/register", handlers.Register)
 	r.POST("/admin/login", handlers.AdminLogin) // Added Admin Login Logic
 
-	r.GET("/candidates", handlers.GetCandidates)
-	r.POST("/vote", handlers.Vote)
+	// Users Routes
+	api := r.Group("/")
+	api.GET("/candidates", handlers.GetCandidates)
+	api.POST("/vote", handlers.Vote)
+	api.POST("/enter-voting", handlers.EnterVoting) // New Route
+	api.GET("/settings", handlers.GetSettings)      // Public for countdown
 
 	r.GET("/admin/results", handlers.GetResults)
 
