@@ -123,12 +123,21 @@ func Register(c *gin.Context) {
 	// Check if user exists by NIM or Email
 	var existingUser models.User
 	if err := db.DB.Where("nim = ? OR email = ?", nim, userEmail).First(&existingUser).Error; err == nil {
-		if existingUser.NIM == nim {
-			c.JSON(http.StatusConflict, gin.H{"error": "NIM sudah terdaftar"})
+		// User exists. Check status.
+		if existingUser.VerificationStatus == "rejected" {
+			// Allow Re-registration (Update)
+			// Proceed to update this user instead of creating new
 		} else {
-			c.JSON(http.StatusConflict, gin.H{"error": "Email sudah terdaftar"})
+			if existingUser.NIM == nim {
+				c.JSON(http.StatusConflict, gin.H{"error": "NIM sudah terdaftar"})
+			} else {
+				c.JSON(http.StatusConflict, gin.H{"error": "Email sudah terdaftar"})
+			}
+			return
 		}
-		return
+	} else {
+		// User does not exist, prepare a new instance logic
+		existingUser = models.User{}
 	}
 
 	var startSetting models.Setting
@@ -169,20 +178,40 @@ func Register(c *gin.Context) {
 	}
 	passStr := string(hashedPassword)
 
-	newUser := models.User{
-		Name:               name,
-		NIM:                nim,
-		Email:              userEmail,
-		Password:           &passStr,
-		Role:               "voter",
-		ProfileImage:       profileLink,
-		KTMImage:           ktmLink,
-		VerificationStatus: "pending",
-	}
+	var newUser models.User // Declare outside to make it accessible
 
-	if err := db.DB.Create(&newUser).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mendaftarkan pengguna"})
-		return
+	if existingUser.ID != 0 {
+		// UPDATE existing rejected user
+		existingUser.Name = name
+		existingUser.NIM = nim
+		existingUser.Email = userEmail
+		existingUser.Password = &passStr
+		existingUser.ProfileImage = profileLink
+		existingUser.KTMImage = ktmLink
+		existingUser.VerificationStatus = "pending" // Reset to pending
+		
+		if err := db.DB.Save(&existingUser).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal memperbarui pendaftaran"})
+			return
+		}
+		newUser = existingUser 
+	} else {
+		// CREATE new user
+		newUser = models.User{
+			Name:               name,
+			NIM:                nim,
+			Email:              userEmail,
+			Password:           &passStr,
+			Role:               "voter",
+			ProfileImage:       profileLink,
+			KTMImage:           ktmLink,
+			VerificationStatus: "pending",
+		}
+
+		if err := db.DB.Create(&newUser).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mendaftarkan pengguna"})
+			return
+		}
 	}
 
 	go func() {
@@ -371,11 +400,13 @@ func VerifyUser(c *gin.Context) {
 		db.DB.Save(&user)
 		c.JSON(http.StatusOK, gin.H{"message": "User approved", "user": user})
 	} else if req.Action == "reject" {
-		if err := db.DB.Delete(&user).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
+		// Mark as rejected instead of deleting
+		user.VerificationStatus = "rejected"
+		if err := db.DB.Save(&user).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to reject user"})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"message": "User rejected and removed"})
+		c.JSON(http.StatusOK, gin.H{"message": "User marked as rejected"})
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid action"})
 		return
