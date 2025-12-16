@@ -271,7 +271,7 @@ const AdminPage = () => {
         </div>
         <div className="flex gap-3">
           <div className="bg-white border border-slate-200 rounded-xl p-1 flex shadow-sm">
-            {["mahasiswa", "all_users", "verifikasi_suara", "votes_rejected", "kandidat", "recap", "settings"].map(tab => (
+            {["mahasiswa", "all_users", "verifikasi_suara", "votes_rejected", "kandidat", "settings"].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -300,8 +300,8 @@ const AdminPage = () => {
         </div>
       </div>
 
-      {/* --- RECAP TAB --- */}
-      {activeTab === "recap" && (
+      {/* --- RECAP TAB (HIDDEN) --- */}
+      {/* {activeTab === "recap" && (
         <div className="space-y-8 animate-fade-in-up">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <StatCard
@@ -356,7 +356,7 @@ const AdminPage = () => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* --- MAHASISWA TAB --- */}
       {activeTab === "mahasiswa" && (
