@@ -568,7 +568,7 @@ func GetPendingVotes(c *gin.Context) {
 	votes := []PendingVote{}
 
 	db.DB.Table("votes").
-		Select("votes.id as id, users.name as userName, users.nim as userNim, users.email as userEmail, votes.ktm_image as ktm_image, votes.self_image as self_image, COALESCE(candidates.name, 'Kotak Kosong') as candidateName").
+		Select("votes.id as id, users.name as user_name, users.nim as user_nim, users.email as user_email, votes.ktm_image as ktm_image, votes.self_image as self_image, COALESCE(candidates.name, 'Kotak Kosong') as candidate_name").
 		Joins("left join users on users.id = votes.user_id").
 		Joins("left join candidates on candidates.id = votes.candidate_id").
 		Where("votes.status = ?", "pending").
@@ -593,7 +593,7 @@ func GetRejectedVotes(c *gin.Context) {
 	votes := []PendingVote{}
 
 	db.DB.Table("votes").
-		Select("votes.id as id, users.name as userName, users.nim as userNim, users.email as userEmail, votes.ktm_image as ktm_image, votes.self_image as self_image, COALESCE(candidates.name, 'Kotak Kosong') as candidateName, votes.status as status, votes.rejection_reason").
+		Select("votes.id as id, users.name as user_name, users.nim as user_nim, users.email as user_email, votes.ktm_image as ktm_image, votes.self_image as self_image, COALESCE(candidates.name, 'Kotak Kosong') as candidate_name, votes.status as status, votes.rejection_reason").
 		Joins("left join users on users.id = votes.user_id").
 		Joins("left join candidates on candidates.id = votes.candidate_id").
 		Where("votes.status = ?", "rejected").
