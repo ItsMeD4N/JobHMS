@@ -82,55 +82,60 @@ const VotingPage = () => {
         }
     };
 
-    // 2. Persistent Timer Logic
+    // 2. Persistent Timer Logic (Server Synced)
     useEffect(() => {
         if (!isElectionOpen || !user || user.HasVoted) return;
 
         const VOTING_DURATION_SEC = 5 * 60; // 5 minutes
-        const STORAGE_KEY = `vote_entry_time_${user.ID}`;
+        let timerId: ReturnType<typeof setInterval>;
 
-        // Initialize or Retrieve Entry Time
-        let entryTime = localStorage.getItem(STORAGE_KEY);
-        if (!entryTime) {
-            entryTime = Date.now().toString();
-            localStorage.setItem(STORAGE_KEY, entryTime);
+        const initializeTimer = async () => {
+            try {
+                // Always fetch/sync with server first
+                const res = await api.post('/enter-voting', { userId: user.ID });
+                
+                // Server returns the fixed entry time (either existing or just created)
+                const serverEntryTimeStr = res.data.entryTime;
+                if (!serverEntryTimeStr) {
+                    console.error("No entry time returned from server");
+                    return;
+                }
 
-            // SYNC TO BACKEND
-            if (user) {
-                api.post('/enter-voting', { userId: user.ID })
-                    .catch(err => console.error("Failed to sync entry time", err));
+                const entryTimeMs = new Date(serverEntryTimeStr).getTime();
+                
+                // Function to update remaining time
+                const updateTimer = () => {
+                    const now = Date.now();
+                    // Calculate elapsed time since the SERVER entry time
+                    const elapsedSec = Math.floor((now - entryTimeMs) / 1000);
+                    const remaining = VOTING_DURATION_SEC - elapsedSec;
+
+                    if (remaining <= 0) {
+                        setTimeLeft(0);
+                        clearInterval(timerId); // Stop counting
+                        handleAutoAbstain(); // Trigger auto-vote
+                    } else {
+                        setTimeLeft(remaining);
+                    }
+                };
+
+                // Run immediately
+                updateTimer();
+
+                // Start interval
+                timerId = setInterval(updateTimer, 1000);
+
+            } catch (error) {
+                console.error("Failed to sync voting entry time:", error);
+                showError("Gagal menyinkronkan waktu voting. Silakan refresh halaman.");
             }
-        } else {
-             // Optional: Sync anyway if backend missed it? 
-             // Better: Only on first detection to avoid resetting backend if logic changes
-             // Backend logic protects against reset logic anyway.
-             if (user) {
-                 api.post('/enter-voting', { userId: user.ID })
-                     .catch(err => console.error("Failed to sync entry time", err));
-             }
-        }
-
-        const calculateTimeLeft = () => {
-            const now = Date.now();
-            const elapsed = Math.floor((now - parseInt(entryTime!)) / 1000);
-            const remaining = VOTING_DURATION_SEC - elapsed;
-            return remaining > 0 ? remaining : 0;
         };
 
-        // Set initial calculated time
-        setTimeLeft(calculateTimeLeft());
+        initializeTimer();
 
-        const timer = setInterval(() => {
-            const remaining = calculateTimeLeft();
-            setTimeLeft(remaining);
-
-            if (remaining <= 0) {
-                clearInterval(timer);
-                handleAutoAbstain();
-            }
-        }, 1000);
-
-        return () => clearInterval(timer);
+        return () => {
+            if (timerId) clearInterval(timerId);
+        };
     }, [isElectionOpen, user]);
 
     const handleAutoAbstain = () => {
