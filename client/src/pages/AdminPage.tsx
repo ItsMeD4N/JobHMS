@@ -5,7 +5,7 @@ import UserDetailModal from "../components/UserDetailModal";
 import VoteDetailModal from "../components/VoteDetailModal";
 import AdminLayout from "../components/AdminLayout";
 import { useToast } from "../contexts/ToastContext";
-import { RefreshCw, CheckCircle2, XCircle, Plus, Trash2 } from "lucide-react";
+import { RefreshCw, CheckCircle2, XCircle, Plus, Trash2, Eye, EyeOff } from "lucide-react";
 
 interface User {
   ID: number;
@@ -101,6 +101,7 @@ const AdminPage = () => {
     startTime: "",
     endTime: ""
   });
+  const [showSensitive, setShowSensitive] = useState(true);
 
   useEffect(() => {
     if (!user || user.Role !== "admin") {
@@ -495,6 +496,18 @@ const AdminPage = () => {
       {/* --- VERIFIKASI SUARA TAB --- */}
       {activeTab === "verifikasi_suara" && (
         <div className="space-y-6">
+          <div className="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+             <h3 className="font-bold text-lg text-slate-900">Vote Verification Queue</h3>
+             <button
+               onClick={() => setShowSensitive(!showSensitive)}
+               className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                 showSensitive ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-emerald-100 text-emerald-700'
+               }`}
+             >
+               {showSensitive ? <EyeOff size={18} /> : <Eye size={18} />}
+               {showSensitive ? "Hide Details" : "Show Details"}
+             </button>
+           </div>
           {pendingVotes.length === 0 ? (
             <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-400">
               No pending votes to verify.
@@ -505,22 +518,34 @@ const AdminPage = () => {
                 <div key={v.id} className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col md:flex-row gap-8 items-center shadow-sm">
                   <div className="flex-1">
                     <h4 className="text-slate-400 text-xs uppercase tracking-wider mb-1 font-bold">Voter</h4>
-                    <p className="font-bold text-lg text-slate-900">{v.userName}</p>
+                    <p className="font-bold text-lg text-slate-900">{showSensitive ? v.userName : "********"}</p>
                   </div>
                   {/* Voted For removed as requested */}
 
                   <div className="flex gap-4">
                     <div className="text-center">
                       <span className="text-[10px] text-slate-400 mb-1 block uppercase font-bold">KTM Record</span>
-                      <a href={getImageSrc(v.ktmImage)} target="_blank" className="block w-20 h-20 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden hover:scale-105 transition-transform shadow-sm">
-                        <img src={getImageSrc(v.ktmImage)} className="w-full h-full object-cover" />
-                      </a>
+                      {showSensitive ? (
+                        <a href={getImageSrc(v.ktmImage)} target="_blank" className="block w-20 h-20 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden hover:scale-105 transition-transform shadow-sm">
+                          <img src={getImageSrc(v.ktmImage)} className="w-full h-full object-cover" />
+                        </a>
+                      ) : (
+                        <div className="w-20 h-20 bg-slate-100 rounded-lg border border-slate-200 flex items-center justify-center">
+                          <EyeOff size={20} className="text-slate-300" />
+                        </div>
+                      )}
                     </div>
                     <div className="text-center">
                       <span className="text-[10px] text-slate-400 mb-1 block uppercase font-bold">Verification</span>
-                      <a href={getImageSrc(v.selfImage)} target="_blank" className="block w-20 h-20 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden hover:scale-105 transition-transform shadow-sm">
-                        <img src={getImageSrc(v.selfImage)} className="w-full h-full object-cover" />
-                      </a>
+                      {showSensitive ? (
+                        <a href={getImageSrc(v.selfImage)} target="_blank" className="block w-20 h-20 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden hover:scale-105 transition-transform shadow-sm">
+                          <img src={getImageSrc(v.selfImage)} className="w-full h-full object-cover" />
+                        </a>
+                      ) : (
+                        <div className="w-20 h-20 bg-slate-100 rounded-lg border border-slate-200 flex items-center justify-center">
+                          <EyeOff size={20} className="text-slate-300" />
+                        </div>
+                      )}
                     </div>
                   </div>
 
