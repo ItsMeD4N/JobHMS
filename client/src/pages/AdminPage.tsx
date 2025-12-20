@@ -75,6 +75,9 @@ const AdminPage = () => {
   const [results, setResults] = useState<any[]>([]); // Using any to handle inconsistent casing from API if valid
   const [candidates, setCandidates] = useState<Candidate[]>([]);
 
+  // Visibility State for KTM Images in Verification
+  const [visibleKtmMap, setVisibleKtmMap] = useState<Record<number, boolean>>({});
+
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState("");
   const [filterVerification, setFilterVerification] = useState("all");
@@ -512,9 +515,15 @@ const AdminPage = () => {
                   <div className="flex gap-4">
                     <div className="text-center">
                       <span className="text-[10px] text-slate-400 mb-1 block uppercase font-bold">KTM Record</span>
-                      <a href={getImageSrc(v.ktmImage)} target="_blank" className="block w-20 h-20 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden hover:scale-105 transition-transform shadow-sm">
-                        <img src={getImageSrc(v.ktmImage)} className="w-full h-full object-cover" />
-                      </a>
+                      <div className="w-20 h-20 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden shadow-sm flex items-center justify-center relative">
+                        {visibleKtmMap[v.id] ? (
+                          <a href={getImageSrc(v.ktmImage)} target="_blank" className="block w-full h-full hover:scale-105 transition-transform">
+                            <img src={getImageSrc(v.ktmImage)} className="w-full h-full object-cover" />
+                          </a>
+                        ) : (
+                          <span className="text-xs text-slate-400 font-medium">Hidden</span>
+                        )}
+                      </div>
                     </div>
                     <div className="text-center">
                       <span className="text-[10px] text-slate-400 mb-1 block uppercase font-bold">Verification</span>
@@ -527,6 +536,12 @@ const AdminPage = () => {
                   <div className="flex flex-col gap-2 min-w-[140px]">
                     <button onClick={() => handleVerifyVote(v.id, "approve")} className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-emerald-200 shadow-md transition-all">VALIDATE</button>
                     <button onClick={() => handleVerifyVote(v.id, "reject")} className="w-full py-2 bg-white hover:bg-red-50 text-slate-500 hover:text-red-500 border border-slate-200 hover:border-red-200 rounded-lg transition-all">INVALID</button>
+                    <button
+                      onClick={() => setVisibleKtmMap(prev => ({ ...prev, [v.id]: !prev[v.id] }))}
+                      className="w-full py-1.5 text-xs font-bold text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors mt-1"
+                    >
+                      {visibleKtmMap[v.id] ? "Hide KTM" : "Show KTM"}
+                    </button>
                   </div>
                 </div>
               ))}
@@ -538,37 +553,37 @@ const AdminPage = () => {
       {/* --- REJECTED VOTES TAB --- */}
       {activeTab === "votes_rejected" && (
         <div className="space-y-6">
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
             <h2 className="font-bold text-xl mb-6 text-slate-900">Rejected Votes Log</h2>
             {rejectedVotes.length === 0 ? (
-                <div className="p-12 text-center text-slate-400">
+              <div className="p-12 text-center text-slate-400">
                 No rejected votes found.
-                </div>
+              </div>
             ) : (
-                <div className="overflow-x-auto">
+              <div className="overflow-x-auto">
                 <table className="w-full text-left">
-                    <thead className="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider">
+                  <thead className="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider">
                     <tr>
-                        <th className="p-4 rounded-tl-xl w-48">NIM</th>
-                        <th className="p-4 rounded-tr-xl">Reason</th>
+                      <th className="p-4 rounded-tl-xl w-48">NIM</th>
+                      <th className="p-4 rounded-tr-xl">Reason</th>
                     </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
                     {rejectedVotes.map((v) => (
-                        <tr key={v.id} className="hover:bg-slate-50 transition-colors">
+                      <tr key={v.id} className="hover:bg-slate-50 transition-colors">
                         <td className="p-4 font-mono text-slate-900 font-bold">{v.userNim}</td>
                         <td className="p-4">
-                            <span className="text-red-600 font-medium">
+                          <span className="text-red-600 font-medium">
                             {v.rejectionReason || "No reason provided"}
-                            </span>
+                          </span>
                         </td>
-                        </tr>
+                      </tr>
                     ))}
-                    </tbody>
+                  </tbody>
                 </table>
-                </div>
+              </div>
             )}
-            </div>
+          </div>
         </div>
       )}
 
