@@ -284,7 +284,7 @@ const AdminPage = () => {
         </div>
         <div className="flex gap-3">
           <div className="bg-white border border-slate-200 rounded-xl p-1 flex shadow-sm">
-            {["mahasiswa", "all_users", "verifikasi_suara", "votes_rejected", "kandidat", "settings"].map(tab => (
+            {["mahasiswa", "all_users", "verifikasi_suara", "votes_rejected", "kandidat", "recap", "settings"].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
